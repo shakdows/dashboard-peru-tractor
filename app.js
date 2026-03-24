@@ -1,7 +1,22 @@
+function mostrarLoader(show) {
+  document.getElementById("loader").classList.toggle("hidden", !show);
+}
+
+function mostrarError(msg) {
+  const box = document.getElementById("errorBox");
+  box.textContent = msg;
+  box.classList.remove("hidden");
+}
+
+function ocultarError() {
+  document.getElementById("errorBox").classList.add("hidden");
+}
+
 const API_URL = "https://script.google.com/macros/s/AKfycbzg-Ks1cZ0NEwA2aBxNE4J6OCOHDWqpo9W8jza2EjBRoc81nXkEleF6KltDosVt6hdm/exec?action=data";
 
 let chartMontoMesInstance = null;
 let chartTopMarcasInstance = null;
+let chartCategoriasInstance = null;
 
 const filtroAnio = document.getElementById("filtroAnio");
 const filtroMes = document.getElementById("filtroMes");
@@ -93,6 +108,8 @@ function renderChartMontoPorMes(data) {
         {
           label: "Monto",
           data: values,
+          backgroundColor: "rgba(84, 169, 230, 0.55)",
+          borderColor: "rgba(84, 169, 230, 1)",
           borderWidth: 1,
           borderRadius: 8
         }
@@ -146,6 +163,8 @@ function renderChartTopMarcas(data) {
         {
           label: "Monto por marca",
           data: values,
+          backgroundColor: "rgba(84, 169, 230, 0.55)",
+          borderColor: "rgba(84, 169, 230, 1)",
           borderWidth: 1,
           borderRadius: 8
         }
@@ -181,6 +200,54 @@ function renderChartTopMarcas(data) {
   });
 }
 
+function renderChartCategorias(topMarcas) {
+  const canvas = document.getElementById("chartCategorias");
+  if (!canvas) return;
+
+  const labels = (topMarcas || []).slice(0, 5).map(item => item[0]);
+  const values = (topMarcas || []).slice(0, 5).map(item => Number(item[1] || 0));
+
+  if (chartCategoriasInstance) {
+    chartCategoriasInstance.destroy();
+  }
+
+  chartCategoriasInstance = new Chart(canvas, {
+    type: "doughnut",
+    data: {
+      labels,
+      datasets: [
+        {
+          data: values,
+          backgroundColor: [
+            "#123e73",
+            "#2b67ac",
+            "#4d8bd6",
+            "#7fb2ea",
+            "#b8d6f6"
+          ],
+          borderWidth: 0
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: "bottom"
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return `${context.label}: ${formatearNumero(context.raw)}`;
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
 function actualizarFiltros(filterOptions) {
   llenarSelect(filtroAnio, filterOptions?.anios || [], "Año");
   llenarSelect(filtroMes, filterOptions?.meses || [], "Mes");
@@ -188,13 +255,67 @@ function actualizarFiltros(filterOptions) {
   llenarSelect(filtroCategoria, filterOptions?.categorias || [], "Categoría");
 }
 
+function renderTablaMarcas(data) {
+  const tbody = document.getElementById("tablaMarcasBody");
+  tbody.innerHTML = "";
+
+  if (!data || !data.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="2">No hay datos disponibles</td>
+      </tr>
+    `;
+    return;
+  }
+
+  data.forEach(item => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${item[0]}</td>
+      <td>${formatearNumero(item[1])}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function generarInsights(data) {
+  const insight1 = document.getElementById("insight1");
+  const insight2 = document.getElementById("insight2");
+
+  const topMarcas = data?.charts?.topMarcas || [];
+  const porMes = data?.charts?.porMes || [];
+  const kpis = data?.kpis || {};
+
+  if (!topMarcas.length && !porMes.length) {
+    insight1.textContent = "No hay datos para los filtros seleccionados.";
+    insight2.textContent = "Prueba cambiando año, mes, marca o categoría.";
+    return;
+  }
+
+  const marcaTop = topMarcas[0] || ["Sin datos", 0];
+
+  let mejorMes = ["Sin datos", 0];
+  porMes.forEach(item => {
+    if (Number(item[1] || 0) > Number(mejorMes[1] || 0)) {
+      mejorMes = item;
+    }
+  });
+
+  insight1.textContent =
+    `La marca líder es ${marcaTop[0]} con monto ${formatearNumero(marcaTop[1])}.`;
+
+  insight2.textContent =
+    `El mes más fuerte es ${mejorMes[0]} y el total general es ${formatearNumero(kpis.totalMonto)}.`;
+}
+
 async function cargarDashboard() {
+  mostrarLoader(true);
+  ocultarError();
+
   try {
     const url = construirUrlConFiltros();
     const response = await fetch(url);
     const data = await response.json();
-
-    console.log("DATOS DASHBOARD:", data);
 
     if (!data || !data.kpis || !data.charts || !data.filters) {
       throw new Error("La respuesta no tiene la estructura esperada.");
@@ -204,8 +325,15 @@ async function cargarDashboard() {
     actualizarKPIs(data.kpis);
     renderChartMontoPorMes(data.charts.porMes || []);
     renderChartTopMarcas(data.charts.topMarcas || []);
+    renderChartCategorias(data.charts.topMarcas || []);
+    renderTablaMarcas(data.charts.topMarcas || []);
+    generarInsights(data);
+
   } catch (error) {
+    mostrarError("Error al cargar datos del dashboard");
     console.error("Error al cargar dashboard:", error);
+  } finally {
+    mostrarLoader(false);
   }
 }
 

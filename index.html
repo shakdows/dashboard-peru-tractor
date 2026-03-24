@@ -5,17 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard Gerencial</title>
 
-  <!-- Estilos -->
   <link rel="stylesheet" href="styles.css" />
-
-  <!-- Chart.js (para gráficos) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
   <div class="app-shell">
 
-    <!-- Sidebar -->
     <aside class="sidebar">
       <div class="brand">
         <div class="brand-badge">PT</div>
@@ -27,15 +23,11 @@
 
       <nav class="side-nav">
         <a class="nav-item active" href="#">Dashboard</a>
-        <a class="nav-item" href="#">Análisis</a>
-        <a class="nav-item" href="#">Historial</a>
       </nav>
     </aside>
 
-    <!-- Contenido principal -->
     <main class="main-content">
 
-      <!-- Header -->
       <header class="topbar">
         <div>
           <h1>Dashboard Gerencial</h1>
@@ -43,33 +35,31 @@
         </div>
       </header>
 
-      <!-- Filtros -->
+      <div id="loader" class="loader hidden">Cargando datos...</div>
+      <div id="errorBox" class="error-box hidden"></div>
+
       <section class="card">
         <h2>Filtros principales</h2>
         <div class="filters-grid">
-
-          <select id="filtroAnio">
-            <option value="">Año</option>
-          </select>
-
-          <select id="filtroMes">
-            <option value="">Mes</option>
-          </select>
-
-          <select id="filtroMarca">
-            <option value="">Marca</option>
-          </select>
-
-          <select id="filtroCategoria">
-            <option value="">Categoría</option>
-          </select>
-
+          <select id="filtroAnio"></select>
+          <select id="filtroMes"></select>
+          <select id="filtroMarca"></select>
+          <select id="filtroCategoria"></select>
         </div>
       </section>
 
-      <!-- KPIs -->
-      <section class="kpi-grid">
+      <section class="insights-grid" id="insightsBox">
+        <div class="insight-card">
+          <span>Insight principal</span>
+          <strong id="insight1">Esperando datos...</strong>
+        </div>
+        <div class="insight-card">
+          <span>Insight secundario</span>
+          <strong id="insight2">Esperando datos...</strong>
+        </div>
+      </section>
 
+      <section class="kpi-grid">
         <div class="kpi-card">
           <span>Total monto</span>
           <strong id="kpiMonto">0</strong>
@@ -89,29 +79,56 @@
           <span>Precio promedio</span>
           <strong id="kpiPrecio">0</strong>
         </div>
-
       </section>
 
-      <!-- Gráficos -->
       <section class="charts-grid">
-
         <div class="chart-card">
           <h3>Monto por mes</h3>
-          <canvas id="chartMontoMes"></canvas>
+          <div class="chart-wrap">
+            <canvas id="chartMontoMes"></canvas>
+          </div>
         </div>
 
         <div class="chart-card">
           <h3>Top 10 marcas</h3>
-          <canvas id="chartTopMarcas"></canvas>
+          <div class="chart-wrap">
+            <canvas id="chartTopMarcas"></canvas>
+          </div>
         </div>
 
+        <div class="chart-card chart-card-full">
+          <h3>Participación por categoría</h3>
+          <div class="chart-wrap doughnut-wrap">
+            <canvas id="chartCategorias"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-head">
+          <h2>Resumen de marcas</h2>
+        </div>
+
+        <div class="table-wrap">
+          <table class="summary-table">
+            <thead>
+              <tr>
+                <th>Marca</th>
+                <th>Monto</th>
+              </tr>
+            </thead>
+            <tbody id="tablaMarcasBody">
+              <tr>
+                <td colspan="2">Cargando datos...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </section>
 
     </main>
   </div>
 
-  <!-- JS principal -->
   <script src="app.js"></script>
-
 </body>
 </html>
