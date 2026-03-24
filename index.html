@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Gerencial</title>
+
+  <!-- Estilos -->
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- Chart.js (para gráficos) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+  <div class="app-shell">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-badge">PT</div>
+        <div>
+          <h2>Peru Tractor</h2>
+          <p>Compras e Inventario</p>
+        </div>
+      </div>
+
+      <nav class="side-nav">
+        <a class="nav-item active" href="#">Dashboard</a>
+        <a class="nav-item" href="#">Análisis</a>
+        <a class="nav-item" href="#">Historial</a>
+      </nav>
+    </aside>
+
+    <!-- Contenido principal -->
+    <main class="main-content">
+
+      <!-- Header -->
+      <header class="topbar">
+        <div>
+          <h1>Dashboard Gerencial</h1>
+          <p>Vista ejecutiva de compras, inventario y comportamiento de productos</p>
+        </div>
+      </header>
+
+      <!-- Filtros -->
+      <section class="card">
+        <h2>Filtros principales</h2>
+        <div class="filters-grid">
+
+          <select id="filtroAnio">
+            <option value="">Año</option>
+          </select>
+
+          <select id="filtroMes">
+            <option value="">Mes</option>
+          </select>
+
+          <select id="filtroMarca">
+            <option value="">Marca</option>
+          </select>
+
+          <select id="filtroCategoria">
+            <option value="">Categoría</option>
+          </select>
+
+        </div>
+      </section>
+
+      <!-- KPIs -->
+      <section class="kpi-grid">
+
+        <div class="kpi-card">
+          <span>Total monto</span>
+          <strong id="kpiMonto">0</strong>
+        </div>
+
+        <div class="kpi-card">
+          <span>Total cantidad</span>
+          <strong id="kpiCantidad">0</strong>
+        </div>
+
+        <div class="kpi-card">
+          <span>Registros</span>
+          <strong id="kpiRegistros">0</strong>
+        </div>
+
+        <div class="kpi-card">
+          <span>Precio promedio</span>
+          <strong id="kpiPrecio">0</strong>
+        </div>
+
+      </section>
+
+      <!-- Gráficos -->
+      <section class="charts-grid">
+
+        <div class="chart-card">
+          <h3>Monto por mes</h3>
+          <canvas id="chartMontoMes"></canvas>
+        </div>
+
+        <div class="chart-card">
+          <h3>Top 10 marcas</h3>
+          <canvas id="chartTopMarcas"></canvas>
+        </div>
+
+      </section>
+
+    </main>
+  </div>
+
+  <!-- JS principal -->
+  <script src="app.js"></script>
+
+</body>
+</html>
