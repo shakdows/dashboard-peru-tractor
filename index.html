@@ -3,123 +3,186 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard Gerencial</title>
-
+  <title>Dashboard Peru Tractor</title>
   <link rel="stylesheet" href="styles.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-
 <body>
   <div class="app-shell">
 
     <aside class="sidebar">
       <div class="brand">
-        <div class="brand-badge">PT</div>
+        <div class="brand-logo">PT</div>
         <div>
           <h2>Peru Tractor</h2>
-          <p>Compras e Inventario</p>
+          <p>Dashboard Ejecutivo</p>
         </div>
       </div>
 
-      <nav class="side-nav">
-        <a class="nav-item active" href="#">Dashboard</a>
-      </nav>
+      <div class="sidebar-panel">
+        <div class="sidebar-title">Módulo activo</div>
+        <div class="sidebar-chip active">Dashboard Gerencial</div>
+      </div>
+
+      <div class="sidebar-panel">
+        <div class="sidebar-title">Estado</div>
+        <div class="sidebar-status">
+          <span class="status-dot"></span>
+          Operativo
+        </div>
+      </div>
     </aside>
 
     <main class="main-content">
 
-      <header class="topbar">
+      <header class="hero">
         <div>
+          <span class="eyebrow">Analítica comercial</span>
           <h1>Dashboard Gerencial</h1>
           <p>Vista ejecutiva de compras, inventario y comportamiento de productos</p>
         </div>
       </header>
 
-      <div id="loader" class="loader hidden">Cargando datos...</div>
+      <div id="loader" class="loader hidden">Cargando información del dashboard...</div>
       <div id="errorBox" class="error-box hidden"></div>
 
-      <section class="card">
-        <h2>Filtros principales</h2>
+      <section class="glass-card filters-card">
+        <div class="section-head">
+          <div>
+            <h2>Filtros principales</h2>
+            <p>Usa filtros combinados o limpia para volver a la vista general</p>
+          </div>
+
+          <button id="btnLimpiarFiltros" class="btn-secondary" type="button">
+            Limpiar filtros
+          </button>
+        </div>
+
         <div class="filters-grid">
-          <select id="filtroAnio"></select>
-          <select id="filtroMes"></select>
-          <select id="filtroMarca"></select>
-          <select id="filtroCategoria"></select>
+          <div class="field">
+            <label for="filtroAnio">Año</label>
+            <select id="filtroAnio"></select>
+          </div>
+
+          <div class="field">
+            <label for="filtroMes">Mes</label>
+            <select id="filtroMes"></select>
+          </div>
+
+          <div class="field">
+            <label for="filtroMarca">Marca</label>
+            <select id="filtroMarca"></select>
+          </div>
+
+          <div class="field">
+            <label for="filtroCategoria">Categoría</label>
+            <select id="filtroCategoria"></select>
+          </div>
         </div>
       </section>
 
-      <section class="insights-grid" id="insightsBox">
-        <div class="insight-card">
+      <section class="insights-grid">
+        <article class="insight-card insight-primary">
           <span>Insight principal</span>
           <strong id="insight1">Esperando datos...</strong>
-        </div>
-        <div class="insight-card">
+        </article>
+
+        <article class="insight-card insight-secondary">
           <span>Insight secundario</span>
           <strong id="insight2">Esperando datos...</strong>
-        </div>
+        </article>
       </section>
 
       <section class="kpi-grid">
-        <div class="kpi-card">
-          <span>Total monto</span>
+        <article class="kpi-card kpi-blue">
+          <div class="kpi-top">
+            <span>Total monto</span>
+            <div class="kpi-icon">S/</div>
+          </div>
           <strong id="kpiMonto">0</strong>
-        </div>
+          <small>Valor acumulado según filtros</small>
+        </article>
 
-        <div class="kpi-card">
-          <span>Total cantidad</span>
+        <article class="kpi-card kpi-cyan">
+          <div class="kpi-top">
+            <span>Total cantidad</span>
+            <div class="kpi-icon">#</div>
+          </div>
           <strong id="kpiCantidad">0</strong>
-        </div>
+          <small>Unidades registradas</small>
+        </article>
 
-        <div class="kpi-card">
-          <span>Registros</span>
+        <article class="kpi-card kpi-violet">
+          <div class="kpi-top">
+            <span>Registros</span>
+            <div class="kpi-icon">R</div>
+          </div>
           <strong id="kpiRegistros">0</strong>
-        </div>
+          <small>Total de operaciones</small>
+        </article>
 
-        <div class="kpi-card">
-          <span>Precio promedio</span>
+        <article class="kpi-card kpi-amber">
+          <div class="kpi-top">
+            <span>Precio promedio</span>
+            <div class="kpi-icon">P</div>
+          </div>
           <strong id="kpiPrecio">0</strong>
-        </div>
+          <small>Promedio por registro</small>
+        </article>
       </section>
 
       <section class="charts-grid">
-        <div class="chart-card">
-          <h3>Monto por mes</h3>
+        <article class="chart-card">
+          <div class="chart-head">
+            <h3>Monto por mes</h3>
+            <span class="chart-badge">Tendencia</span>
+          </div>
           <div class="chart-wrap">
             <canvas id="chartMontoMes"></canvas>
           </div>
-        </div>
+        </article>
 
-        <div class="chart-card">
-          <h3>Top 10 marcas</h3>
+        <article class="chart-card">
+          <div class="chart-head">
+            <h3>Top 10 marcas</h3>
+            <span class="chart-badge">Ranking</span>
+          </div>
           <div class="chart-wrap">
             <canvas id="chartTopMarcas"></canvas>
           </div>
-        </div>
+        </article>
 
-        <div class="chart-card chart-card-full">
-          <h3>Participación por categoría</h3>
+        <article class="chart-card chart-card-full">
+          <div class="chart-head">
+            <h3>Participación top marcas</h3>
+            <span class="chart-badge">Distribución</span>
+          </div>
           <div class="chart-wrap doughnut-wrap">
             <canvas id="chartCategorias"></canvas>
           </div>
-        </div>
+        </article>
       </section>
 
-      <section class="card">
+      <section class="glass-card">
         <div class="section-head">
-          <h2>Resumen de marcas</h2>
+          <div>
+            <h2>Resumen ejecutivo de marcas</h2>
+            <p>Ranking ordenado por monto</p>
+          </div>
         </div>
 
         <div class="table-wrap">
           <table class="summary-table">
             <thead>
               <tr>
+                <th>Ranking</th>
                 <th>Marca</th>
                 <th>Monto</th>
               </tr>
             </thead>
             <tbody id="tablaMarcasBody">
               <tr>
-                <td colspan="2">Cargando datos...</td>
+                <td colspan="3">Cargando datos...</td>
               </tr>
             </tbody>
           </table>

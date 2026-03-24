@@ -18,10 +18,13 @@ let chartMontoMesInstance = null;
 let chartTopMarcasInstance = null;
 let chartCategoriasInstance = null;
 
+let filtrosIniciales = null;
+
 const filtroAnio = document.getElementById("filtroAnio");
 const filtroMes = document.getElementById("filtroMes");
 const filtroMarca = document.getElementById("filtroMarca");
 const filtroCategoria = document.getElementById("filtroCategoria");
+const btnLimpiarFiltros = document.getElementById("btnLimpiarFiltros");
 
 function formatearNumero(valor) {
   return Number(valor || 0).toLocaleString("es-PE", {
@@ -37,7 +40,7 @@ function llenarSelect(selectElement, items, placeholder) {
 
   const optionDefault = document.createElement("option");
   optionDefault.value = "";
-  optionDefault.textContent = placeholder;
+  optionDefault.textContent = `Todos - ${placeholder}`;
   selectElement.appendChild(optionDefault);
 
   (items || []).forEach(item => {
@@ -49,6 +52,15 @@ function llenarSelect(selectElement, items, placeholder) {
 
   const existeValor = (items || []).includes(valorActual);
   selectElement.value = existeValor ? valorActual : "";
+}
+
+function aplicarFiltrosIniciales() {
+  if (!filtrosIniciales) return;
+
+  llenarSelect(filtroAnio, filtrosIniciales.anios || [], "Año");
+  llenarSelect(filtroMes, filtrosIniciales.meses || [], "Mes");
+  llenarSelect(filtroMarca, filtrosIniciales.marcas || [], "Marca");
+  llenarSelect(filtroCategoria, filtrosIniciales.categorias || [], "Categoría");
 }
 
 function obtenerFiltrosActuales() {
@@ -63,7 +75,6 @@ function obtenerFiltrosActuales() {
 function construirUrlConFiltros() {
   const filtros = obtenerFiltrosActuales();
   const params = new URLSearchParams();
-
   params.append("action", "data");
 
   if (filtros.anio) params.append("anio", filtros.anio);
@@ -108,10 +119,16 @@ function renderChartMontoPorMes(data) {
         {
           label: "Monto",
           data: values,
-          backgroundColor: "rgba(84, 169, 230, 0.55)",
-          borderColor: "rgba(84, 169, 230, 1)",
-          borderWidth: 1,
-          borderRadius: 8
+          backgroundColor: [
+            "rgba(13, 99, 255, 0.85)",
+            "rgba(0, 194, 255, 0.85)",
+            "rgba(123, 97, 255, 0.85)",
+            "rgba(255, 159, 26, 0.85)",
+            "rgba(20, 195, 142, 0.85)",
+            "rgba(13, 99, 255, 0.75)"
+          ],
+          borderRadius: 12,
+          borderSkipped: false
         }
       ]
     },
@@ -120,7 +137,9 @@ function renderChartMontoPorMes(data) {
       maintainAspectRatio: false,
       plugins: {
         legend: {
-          display: true
+          labels: {
+            font: { weight: "bold" }
+          }
         },
         tooltip: {
           callbacks: {
@@ -131,9 +150,19 @@ function renderChartMontoPorMes(data) {
         }
       },
       scales: {
+        x: {
+          grid: {
+            display: false
+          },
+          ticks: {
+            color: "#44536b",
+            font: { weight: "bold" }
+          }
+        },
         y: {
           beginAtZero: true,
           ticks: {
+            color: "#44536b",
             callback: function(value) {
               return formatearNumero(value);
             }
@@ -163,10 +192,11 @@ function renderChartTopMarcas(data) {
         {
           label: "Monto por marca",
           data: values,
-          backgroundColor: "rgba(84, 169, 230, 0.55)",
-          borderColor: "rgba(84, 169, 230, 1)",
-          borderWidth: 1,
-          borderRadius: 8
+          backgroundColor: "rgba(0, 194, 255, 0.78)",
+          borderColor: "rgba(13, 99, 255, 1)",
+          borderWidth: 1.5,
+          borderRadius: 12,
+          borderSkipped: false
         }
       ]
     },
@@ -176,7 +206,9 @@ function renderChartTopMarcas(data) {
       maintainAspectRatio: false,
       plugins: {
         legend: {
-          display: true
+          labels: {
+            font: { weight: "bold" }
+          }
         },
         tooltip: {
           callbacks: {
@@ -187,9 +219,19 @@ function renderChartTopMarcas(data) {
         }
       },
       scales: {
+        y: {
+          grid: {
+            display: false
+          },
+          ticks: {
+            color: "#44536b",
+            font: { weight: "bold" }
+          }
+        },
         x: {
           beginAtZero: true,
           ticks: {
+            color: "#44536b",
             callback: function(value) {
               return formatearNumero(value);
             }
@@ -219,22 +261,31 @@ function renderChartCategorias(topMarcas) {
         {
           data: values,
           backgroundColor: [
-            "#123e73",
-            "#2b67ac",
-            "#4d8bd6",
-            "#7fb2ea",
-            "#b8d6f6"
+            "#0d63ff",
+            "#00c2ff",
+            "#7b61ff",
+            "#ff9f1a",
+            "#14c38e"
           ],
-          borderWidth: 0
+          borderColor: "#ffffff",
+          borderWidth: 4,
+          hoverOffset: 10
         }
       ]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      cutout: "58%",
       plugins: {
         legend: {
-          position: "bottom"
+          position: "bottom",
+          labels: {
+            padding: 18,
+            usePointStyle: true,
+            pointStyle: "circle",
+            font: { weight: "bold" }
+          }
         },
         tooltip: {
           callbacks: {
@@ -248,13 +299,6 @@ function renderChartCategorias(topMarcas) {
   });
 }
 
-function actualizarFiltros(filterOptions) {
-  llenarSelect(filtroAnio, filterOptions?.anios || [], "Año");
-  llenarSelect(filtroMes, filterOptions?.meses || [], "Mes");
-  llenarSelect(filtroMarca, filterOptions?.marcas || [], "Marca");
-  llenarSelect(filtroCategoria, filterOptions?.categorias || [], "Categoría");
-}
-
 function renderTablaMarcas(data) {
   const tbody = document.getElementById("tablaMarcasBody");
   tbody.innerHTML = "";
@@ -262,15 +306,16 @@ function renderTablaMarcas(data) {
   if (!data || !data.length) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="2">No hay datos disponibles</td>
+        <td colspan="3">No hay datos disponibles</td>
       </tr>
     `;
     return;
   }
 
-  data.forEach(item => {
+  data.forEach((item, index) => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
+      <td>${index + 1}</td>
       <td>${item[0]}</td>
       <td>${formatearNumero(item[1])}</td>
     `;
@@ -288,13 +333,13 @@ function generarInsights(data) {
 
   if (!topMarcas.length && !porMes.length) {
     insight1.textContent = "No hay datos para los filtros seleccionados.";
-    insight2.textContent = "Prueba cambiando año, mes, marca o categoría.";
+    insight2.textContent = "Limpia filtros o cambia la combinación actual.";
     return;
   }
 
   const marcaTop = topMarcas[0] || ["Sin datos", 0];
-
   let mejorMes = ["Sin datos", 0];
+
   porMes.forEach(item => {
     if (Number(item[1] || 0) > Number(mejorMes[1] || 0)) {
       mejorMes = item;
@@ -302,10 +347,23 @@ function generarInsights(data) {
   });
 
   insight1.textContent =
-    `La marca líder es ${marcaTop[0]} con monto ${formatearNumero(marcaTop[1])}.`;
+    `La marca líder es ${marcaTop[0]} con un monto de ${formatearNumero(marcaTop[1])}.`;
 
   insight2.textContent =
-    `El mes más fuerte es ${mejorMes[0]} y el total general es ${formatearNumero(kpis.totalMonto)}.`;
+    `El mes de mayor movimiento es ${mejorMes[0]} y el total general asciende a ${formatearNumero(kpis.totalMonto)}.`;
+}
+
+async function cargarFiltrosIniciales() {
+  const baseUrl = API_URL.split("?")[0];
+  const response = await fetch(`${baseUrl}?action=data`);
+  const data = await response.json();
+
+  if (!data || !data.filters) {
+    throw new Error("No se pudieron cargar los filtros iniciales.");
+  }
+
+  filtrosIniciales = data.filters;
+  aplicarFiltrosIniciales();
 }
 
 async function cargarDashboard() {
@@ -317,18 +375,16 @@ async function cargarDashboard() {
     const response = await fetch(url);
     const data = await response.json();
 
-    if (!data || !data.kpis || !data.charts || !data.filters) {
+    if (!data || !data.kpis || !data.charts) {
       throw new Error("La respuesta no tiene la estructura esperada.");
     }
 
-    actualizarFiltros(data.filters);
     actualizarKPIs(data.kpis);
     renderChartMontoPorMes(data.charts.porMes || []);
     renderChartTopMarcas(data.charts.topMarcas || []);
     renderChartCategorias(data.charts.topMarcas || []);
     renderTablaMarcas(data.charts.topMarcas || []);
     generarInsights(data);
-
   } catch (error) {
     mostrarError("Error al cargar datos del dashboard");
     console.error("Error al cargar dashboard:", error);
@@ -337,12 +393,34 @@ async function cargarDashboard() {
   }
 }
 
+function limpiarFiltros() {
+  filtroAnio.value = "";
+  filtroMes.value = "";
+  filtroMarca.value = "";
+  filtroCategoria.value = "";
+  cargarDashboard();
+}
+
 function activarEventosFiltros() {
   filtroAnio.addEventListener("change", cargarDashboard);
   filtroMes.addEventListener("change", cargarDashboard);
   filtroMarca.addEventListener("change", cargarDashboard);
   filtroCategoria.addEventListener("change", cargarDashboard);
+  btnLimpiarFiltros.addEventListener("click", limpiarFiltros);
 }
 
-activarEventosFiltros();
-cargarDashboard();
+async function init() {
+  try {
+    mostrarLoader(true);
+    await cargarFiltrosIniciales();
+    activarEventosFiltros();
+    await cargarDashboard();
+  } catch (error) {
+    mostrarError("No se pudo inicializar el dashboard");
+    console.error(error);
+  } finally {
+    mostrarLoader(false);
+  }
+}
+
+init();
