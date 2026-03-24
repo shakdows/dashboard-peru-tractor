@@ -16,7 +16,9 @@ const API_URL = "https://script.google.com/macros/s/AKfycbzg-Ks1cZ0NEwA2aBxNE4J6
 
 let chartMontoMesInstance = null;
 let chartTopMarcasInstance = null;
-let chartCategoriasInstance = null;
+let chartVentasMesInstance = null;
+let chartVentasAnioInstance = null;
+let chartTopCodigosInstance = null;
 
 let filtrosIniciales = null;
 
@@ -24,6 +26,8 @@ const filtroAnio = document.getElementById("filtroAnio");
 const filtroMes = document.getElementById("filtroMes");
 const filtroMarca = document.getElementById("filtroMarca");
 const filtroCategoria = document.getElementById("filtroCategoria");
+const filtroCodigo = document.getElementById("filtroCodigo");
+const filtroCodigoBusqueda = document.getElementById("filtroCodigoBusqueda");
 const btnLimpiarFiltros = document.getElementById("btnLimpiarFiltros");
 
 function formatearNumero(valor) {
@@ -61,6 +65,7 @@ function aplicarFiltrosIniciales() {
   llenarSelect(filtroMes, filtrosIniciales.meses || [], "Mes");
   llenarSelect(filtroMarca, filtrosIniciales.marcas || [], "Marca");
   llenarSelect(filtroCategoria, filtrosIniciales.categorias || [], "Categoría");
+  llenarSelect(filtroCodigo, filtrosIniciales.codigos || [], "Código + marca");
 }
 
 function obtenerFiltrosActuales() {
@@ -68,7 +73,9 @@ function obtenerFiltrosActuales() {
     anio: filtroAnio.value,
     mes: filtroMes.value,
     marca: filtroMarca.value,
-    categoria: filtroCategoria.value
+    categoria: filtroCategoria.value,
+    codigo: filtroCodigo.value,
+    codigo_busqueda: filtroCodigoBusqueda.value.trim()
   };
 }
 
@@ -81,6 +88,8 @@ function construirUrlConFiltros() {
   if (filtros.mes) params.append("mes", filtros.mes);
   if (filtros.marca) params.append("marca", filtros.marca);
   if (filtros.categoria) params.append("categoria", filtros.categoria);
+  if (filtros.codigo) params.append("codigo", filtros.codigo);
+  if (filtros.codigo_busqueda) params.append("codigo_busqueda", filtros.codigo_busqueda);
 
   const baseUrl = API_URL.split("?")[0];
   return `${baseUrl}?${params.toString()}`;
@@ -93,11 +102,17 @@ function actualizarKPIs(kpis) {
   document.getElementById("kpiCantidad").textContent =
     formatearNumero(kpis.totalCantidad);
 
-  document.getElementById("kpiRegistros").textContent =
-    formatearNumero(kpis.totalRegistros);
+  document.getElementById("kpiVeces").textContent =
+    formatearNumero(kpis.totalVecesVendidas);
 
   document.getElementById("kpiPrecio").textContent =
     formatearNumero(Math.round(kpis.precioPromedio || 0));
+
+  document.getElementById("kpiProductos").textContent =
+    formatearNumero(kpis.totalProductos);
+
+  document.getElementById("kpiCodigoTop").textContent =
+    kpis.codigoTop || "Sin datos";
 }
 
 function renderChartMontoPorMes(data) {
@@ -242,18 +257,141 @@ function renderChartTopMarcas(data) {
   });
 }
 
-function renderChartCategorias(topMarcas) {
-  const canvas = document.getElementById("chartCategorias");
+function renderChartVentasPorMes(data) {
+  const canvas = document.getElementById("chartVentasMes");
   if (!canvas) return;
 
-  const labels = (topMarcas || []).slice(0, 5).map(item => item[0]);
-  const values = (topMarcas || []).slice(0, 5).map(item => Number(item[1] || 0));
+  const labels = (data || []).map(item => item[0]);
+  const values = (data || []).map(item => Number(item[1] || 0));
 
-  if (chartCategoriasInstance) {
-    chartCategoriasInstance.destroy();
+  if (chartVentasMesInstance) {
+    chartVentasMesInstance.destroy();
   }
 
-  chartCategoriasInstance = new Chart(canvas, {
+  chartVentasMesInstance = new Chart(canvas, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [
+        {
+          label: "Veces vendidas",
+          data: values,
+          borderColor: "#ff4fa3",
+          backgroundColor: "rgba(255, 79, 163, 0.18)",
+          fill: true,
+          tension: 0.35,
+          pointRadius: 4,
+          pointHoverRadius: 6
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          labels: {
+            font: { weight: "bold" }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: {
+            display: false
+          },
+          ticks: {
+            color: "#44536b",
+            font: { weight: "bold" }
+          }
+        },
+        y: {
+          beginAtZero: true,
+          ticks: {
+            color: "#44536b",
+            callback: function(value) {
+              return formatearNumero(value);
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+function renderChartVentasPorAnio(data) {
+  const canvas = document.getElementById("chartVentasAnio");
+  if (!canvas) return;
+
+  const labels = (data || []).map(item => item[0]);
+  const values = (data || []).map(item => Number(item[1] || 0));
+
+  if (chartVentasAnioInstance) {
+    chartVentasAnioInstance.destroy();
+  }
+
+  chartVentasAnioInstance = new Chart(canvas, {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [
+        {
+          label: "Veces vendidas",
+          data: values,
+          backgroundColor: "rgba(20, 195, 142, 0.75)",
+          borderColor: "rgba(20, 195, 142, 1)",
+          borderWidth: 1.5,
+          borderRadius: 12,
+          borderSkipped: false
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          labels: {
+            font: { weight: "bold" }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: {
+            display: false
+          },
+          ticks: {
+            color: "#44536b",
+            font: { weight: "bold" }
+          }
+        },
+        y: {
+          beginAtZero: true,
+          ticks: {
+            color: "#44536b",
+            callback: function(value) {
+              return formatearNumero(value);
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+function renderChartTopCodigos(data) {
+  const canvas = document.getElementById("chartTopCodigos");
+  if (!canvas) return;
+
+  const labels = (data || []).slice(0, 5).map(item => item[0]);
+  const values = (data || []).slice(0, 5).map(item => Number(item[1] || 0));
+
+  if (chartTopCodigosInstance) {
+    chartTopCodigosInstance.destroy();
+  }
+
+  chartTopCodigosInstance = new Chart(canvas, {
     type: "doughnut",
     data: {
       labels,
@@ -299,8 +437,8 @@ function renderChartCategorias(topMarcas) {
   });
 }
 
-function renderTablaMarcas(data) {
-  const tbody = document.getElementById("tablaMarcasBody");
+function renderTablaCodigos(data) {
+  const tbody = document.getElementById("tablaCodigosBody");
   tbody.innerHTML = "";
 
   if (!data || !data.length) {
@@ -329,6 +467,8 @@ function generarInsights(data) {
 
   const topMarcas = data?.charts?.topMarcas || [];
   const porMes = data?.charts?.porMes || [];
+  const ventasPorMes = data?.charts?.ventasPorMes || [];
+  const topCodigos = data?.charts?.topCodigos || [];
   const kpis = data?.kpis || {};
 
   if (!topMarcas.length && !porMes.length) {
@@ -338,19 +478,27 @@ function generarInsights(data) {
   }
 
   const marcaTop = topMarcas[0] || ["Sin datos", 0];
-  let mejorMes = ["Sin datos", 0];
+  const codigoTop = topCodigos[0] || ["Sin datos", 0];
 
+  let mejorMesMonto = ["Sin datos", 0];
   porMes.forEach(item => {
-    if (Number(item[1] || 0) > Number(mejorMes[1] || 0)) {
-      mejorMes = item;
+    if (Number(item[1] || 0) > Number(mejorMesMonto[1] || 0)) {
+      mejorMesMonto = item;
+    }
+  });
+
+  let mejorMesFrecuencia = ["Sin datos", 0];
+  ventasPorMes.forEach(item => {
+    if (Number(item[1] || 0) > Number(mejorMesFrecuencia[1] || 0)) {
+      mejorMesFrecuencia = item;
     }
   });
 
   insight1.textContent =
-    `La marca líder es ${marcaTop[0]} con un monto de ${formatearNumero(marcaTop[1])}.`;
+    `La marca líder es ${marcaTop[0]} y el código con mayor monto es ${codigoTop[0]}.`;
 
   insight2.textContent =
-    `El mes de mayor movimiento es ${mejorMes[0]} y el total general asciende a ${formatearNumero(kpis.totalMonto)}.`;
+    `El mes con mayor monto es ${mejorMesMonto[0]}, el mes con más ventas es ${mejorMesFrecuencia[0]} y el total asciende a ${formatearNumero(kpis.totalMonto)}.`;
 }
 
 async function cargarFiltrosIniciales() {
@@ -358,11 +506,11 @@ async function cargarFiltrosIniciales() {
   const response = await fetch(`${baseUrl}?action=data`);
   const data = await response.json();
 
-  if (!data || !data.filters) {
+  if (!data || !data.baseFilters) {
     throw new Error("No se pudieron cargar los filtros iniciales.");
   }
 
-  filtrosIniciales = data.filters;
+  filtrosIniciales = data.baseFilters;
   aplicarFiltrosIniciales();
 }
 
@@ -382,8 +530,10 @@ async function cargarDashboard() {
     actualizarKPIs(data.kpis);
     renderChartMontoPorMes(data.charts.porMes || []);
     renderChartTopMarcas(data.charts.topMarcas || []);
-    renderChartCategorias(data.charts.topMarcas || []);
-    renderTablaMarcas(data.charts.topMarcas || []);
+    renderChartVentasPorMes(data.charts.ventasPorMes || []);
+    renderChartVentasPorAnio(data.charts.ventasPorAnio || []);
+    renderChartTopCodigos(data.charts.topCodigos || []);
+    renderTablaCodigos(data.charts.topCodigos || []);
     generarInsights(data);
   } catch (error) {
     mostrarError("Error al cargar datos del dashboard");
@@ -398,7 +548,17 @@ function limpiarFiltros() {
   filtroMes.value = "";
   filtroMarca.value = "";
   filtroCategoria.value = "";
+  filtroCodigo.value = "";
+  filtroCodigoBusqueda.value = "";
   cargarDashboard();
+}
+
+function debounce(fn, delay = 400) {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), delay);
+  };
 }
 
 function activarEventosFiltros() {
@@ -406,6 +566,8 @@ function activarEventosFiltros() {
   filtroMes.addEventListener("change", cargarDashboard);
   filtroMarca.addEventListener("change", cargarDashboard);
   filtroCategoria.addEventListener("change", cargarDashboard);
+  filtroCodigo.addEventListener("change", cargarDashboard);
+  filtroCodigoBusqueda.addEventListener("input", debounce(cargarDashboard, 400));
   btnLimpiarFiltros.addEventListener("click", limpiarFiltros);
 }
 

@@ -9,7 +9,6 @@
 </head>
 <body>
   <div class="app-shell">
-
     <aside class="sidebar">
       <div class="brand">
         <div class="brand-logo">PT</div>
@@ -21,7 +20,7 @@
 
       <div class="sidebar-panel">
         <div class="sidebar-title">Módulo activo</div>
-        <div class="sidebar-chip active">Dashboard Gerencial</div>
+        <div class="sidebar-chip active">Repuestos y ventas</div>
       </div>
 
       <div class="sidebar-panel">
@@ -34,12 +33,11 @@
     </aside>
 
     <main class="main-content">
-
       <header class="hero">
         <div>
           <span class="eyebrow">Analítica comercial</span>
           <h1>Dashboard Gerencial</h1>
-          <p>Vista ejecutiva de compras, inventario y comportamiento de productos</p>
+          <p>Compras, códigos, marcas y frecuencia de ventas de repuestos</p>
         </div>
       </header>
 
@@ -50,7 +48,7 @@
         <div class="section-head">
           <div>
             <h2>Filtros principales</h2>
-            <p>Usa filtros combinados o limpia para volver a la vista general</p>
+            <p>Filtra por año, mes, marca, categoría, código exacto o búsqueda libre</p>
           </div>
 
           <button id="btnLimpiarFiltros" class="btn-secondary" type="button">
@@ -77,6 +75,16 @@
           <div class="field">
             <label for="filtroCategoria">Categoría</label>
             <select id="filtroCategoria"></select>
+          </div>
+
+          <div class="field">
+            <label for="filtroCodigo">Código + marca exacto</label>
+            <select id="filtroCodigo"></select>
+          </div>
+
+          <div class="field">
+            <label for="filtroCodigoBusqueda">Buscar código</label>
+            <input id="filtroCodigoBusqueda" type="text" placeholder="Ej: 5K9090, CAT, CTP..." />
           </div>
         </div>
       </section>
@@ -114,11 +122,11 @@
 
         <article class="kpi-card kpi-violet">
           <div class="kpi-top">
-            <span>Registros</span>
-            <div class="kpi-icon">R</div>
+            <span>Veces vendidas</span>
+            <div class="kpi-icon">V</div>
           </div>
-          <strong id="kpiRegistros">0</strong>
-          <small>Total de operaciones</small>
+          <strong id="kpiVeces">0</strong>
+          <small>Frecuencia total de ventas</small>
         </article>
 
         <article class="kpi-card kpi-amber">
@@ -128,6 +136,24 @@
           </div>
           <strong id="kpiPrecio">0</strong>
           <small>Promedio por registro</small>
+        </article>
+
+        <article class="kpi-card kpi-green">
+          <div class="kpi-top">
+            <span>Productos únicos</span>
+            <div class="kpi-icon">U</div>
+          </div>
+          <strong id="kpiProductos">0</strong>
+          <small>Códigos únicos en la selección</small>
+        </article>
+
+        <article class="kpi-card kpi-pink">
+          <div class="kpi-top">
+            <span>Código líder</span>
+            <div class="kpi-icon">C</div>
+          </div>
+          <strong id="kpiCodigoTop" class="kpi-text">-</strong>
+          <small>Mayor monto en la selección</small>
         </article>
       </section>
 
@@ -152,13 +178,33 @@
           </div>
         </article>
 
+        <article class="chart-card">
+          <div class="chart-head">
+            <h3>Veces vendidas por mes</h3>
+            <span class="chart-badge">Frecuencia</span>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="chartVentasMes"></canvas>
+          </div>
+        </article>
+
+        <article class="chart-card">
+          <div class="chart-head">
+            <h3>Veces vendidas por año</h3>
+            <span class="chart-badge">Frecuencia</span>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="chartVentasAnio"></canvas>
+          </div>
+        </article>
+
         <article class="chart-card chart-card-full">
           <div class="chart-head">
-            <h3>Participación top marcas</h3>
+            <h3>Top códigos por monto</h3>
             <span class="chart-badge">Distribución</span>
           </div>
           <div class="chart-wrap doughnut-wrap">
-            <canvas id="chartCategorias"></canvas>
+            <canvas id="chartTopCodigos"></canvas>
           </div>
         </article>
       </section>
@@ -166,7 +212,7 @@
       <section class="glass-card">
         <div class="section-head">
           <div>
-            <h2>Resumen ejecutivo de marcas</h2>
+            <h2>Resumen ejecutivo de códigos</h2>
             <p>Ranking ordenado por monto</p>
           </div>
         </div>
@@ -176,11 +222,11 @@
             <thead>
               <tr>
                 <th>Ranking</th>
-                <th>Marca</th>
+                <th>Código + marca</th>
                 <th>Monto</th>
               </tr>
             </thead>
-            <tbody id="tablaMarcasBody">
+            <tbody id="tablaCodigosBody">
               <tr>
                 <td colspan="3">Cargando datos...</td>
               </tr>
@@ -188,7 +234,6 @@
           </table>
         </div>
       </section>
-
     </main>
   </div>
 
