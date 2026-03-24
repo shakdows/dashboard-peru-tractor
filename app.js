@@ -95,15 +95,16 @@ function construirUrlConFiltros() {
   return `${baseUrl}?${params.toString()}`;
 }
 
-function actualizarKPIs(kpis) {
+function actualizarKPIs(kpis, producto) {
   document.getElementById("kpiMonto").textContent =
     formatearNumero(kpis.totalMonto);
 
   document.getElementById("kpiCantidad").textContent =
     formatearNumero(kpis.totalCantidad);
 
+  const veces = producto?.indicadores?.totalVeces ?? kpis.totalVecesVendidas ?? 0;
   document.getElementById("kpiVeces").textContent =
-    formatearNumero(kpis.totalVecesVendidas);
+    formatearNumero(veces);
 
   document.getElementById("kpiPrecio").textContent =
     formatearNumero(Math.round(kpis.precioPromedio || 0));
@@ -152,9 +153,7 @@ function renderChartMontoPorMes(data) {
       maintainAspectRatio: false,
       plugins: {
         legend: {
-          labels: {
-            font: { weight: "bold" }
-          }
+          labels: { font: { weight: "bold" } }
         },
         tooltip: {
           callbacks: {
@@ -166,13 +165,8 @@ function renderChartMontoPorMes(data) {
       },
       scales: {
         x: {
-          grid: {
-            display: false
-          },
-          ticks: {
-            color: "#44536b",
-            font: { weight: "bold" }
-          }
+          grid: { display: false },
+          ticks: { color: "#44536b", font: { weight: "bold" } }
         },
         y: {
           beginAtZero: true,
@@ -221,9 +215,7 @@ function renderChartTopMarcas(data) {
       maintainAspectRatio: false,
       plugins: {
         legend: {
-          labels: {
-            font: { weight: "bold" }
-          }
+          labels: { font: { weight: "bold" } }
         },
         tooltip: {
           callbacks: {
@@ -235,13 +227,8 @@ function renderChartTopMarcas(data) {
       },
       scales: {
         y: {
-          grid: {
-            display: false
-          },
-          ticks: {
-            color: "#44536b",
-            font: { weight: "bold" }
-          }
+          grid: { display: false },
+          ticks: { color: "#44536b", font: { weight: "bold" } }
         },
         x: {
           beginAtZero: true,
@@ -257,12 +244,20 @@ function renderChartTopMarcas(data) {
   });
 }
 
-function renderChartVentasPorMes(data) {
+function renderChartVentasPorMes(data, producto) {
   const canvas = document.getElementById("chartVentasMes");
   if (!canvas) return;
 
-  const labels = (data || []).map(item => item[0]);
-  const values = (data || []).map(item => Number(item[1] || 0));
+  let labels = [];
+  let values = [];
+
+  if (producto?.indicadores?.historial?.length) {
+    labels = producto.indicadores.historial.map(item => `${item.mes}-${item.anio}`);
+    values = producto.indicadores.historial.map(item => Number(item.vecesVendidas || 0));
+  } else {
+    labels = (data || []).map(item => item[0]);
+    values = (data || []).map(item => Number(item[1] || 0));
+  }
 
   if (chartVentasMesInstance) {
     chartVentasMesInstance.destroy();
@@ -290,20 +285,13 @@ function renderChartVentasPorMes(data) {
       maintainAspectRatio: false,
       plugins: {
         legend: {
-          labels: {
-            font: { weight: "bold" }
-          }
+          labels: { font: { weight: "bold" } }
         }
       },
       scales: {
         x: {
-          grid: {
-            display: false
-          },
-          ticks: {
-            color: "#44536b",
-            font: { weight: "bold" }
-          }
+          grid: { display: false },
+          ticks: { color: "#44536b", font: { weight: "bold" } }
         },
         y: {
           beginAtZero: true,
@@ -319,12 +307,20 @@ function renderChartVentasPorMes(data) {
   });
 }
 
-function renderChartVentasPorAnio(data) {
+function renderChartVentasPorAnio(data, producto) {
   const canvas = document.getElementById("chartVentasAnio");
   if (!canvas) return;
 
-  const labels = (data || []).map(item => item[0]);
-  const values = (data || []).map(item => Number(item[1] || 0));
+  let labels = [];
+  let values = [];
+
+  if (producto?.indicadores?.totalAnual?.length) {
+    labels = producto.indicadores.totalAnual.map(item => item.anio);
+    values = producto.indicadores.totalAnual.map(item => Number(item.vecesVendidas || 0));
+  } else {
+    labels = (data || []).map(item => item[0]);
+    values = (data || []).map(item => Number(item[1] || 0));
+  }
 
   if (chartVentasAnioInstance) {
     chartVentasAnioInstance.destroy();
@@ -351,20 +347,13 @@ function renderChartVentasPorAnio(data) {
       maintainAspectRatio: false,
       plugins: {
         legend: {
-          labels: {
-            font: { weight: "bold" }
-          }
+          labels: { font: { weight: "bold" } }
         }
       },
       scales: {
         x: {
-          grid: {
-            display: false
-          },
-          ticks: {
-            color: "#44536b",
-            font: { weight: "bold" }
-          }
+          grid: { display: false },
+          ticks: { color: "#44536b", font: { weight: "bold" } }
         },
         y: {
           beginAtZero: true,
@@ -437,33 +426,82 @@ function renderChartTopCodigos(data) {
   });
 }
 
-function renderTablaCodigos(data) {
-  const tbody = document.getElementById("tablaCodigosBody");
+function renderTablaDetalle(producto) {
+  const tbody = document.getElementById("tablaDetalleBody");
   tbody.innerHTML = "";
 
-  if (!data || !data.length) {
+  const rows = producto?.detalleVentas || [];
+
+  if (!rows.length) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="3">No hay datos disponibles</td>
+        <td colspan="8">Selecciona un código para ver el historial</td>
       </tr>
     `;
     return;
   }
 
-  data.forEach((item, index) => {
+  rows.forEach(item => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${index + 1}</td>
-      <td>${item[0]}</td>
-      <td>${formatearNumero(item[1])}</td>
+      <td>${item.fecha || ""}</td>
+      <td>${item.anio || ""}</td>
+      <td>${item.mes || ""}</td>
+      <td>${item.marca || ""}</td>
+      <td>${item.codigo || ""}</td>
+      <td>${formatearNumero(item.cantidad)}</td>
+      <td>${formatearNumero(item.precio)}</td>
+      <td>${formatearNumero(item.monto)}</td>
     `;
     tbody.appendChild(tr);
   });
 }
 
-function generarInsights(data) {
+function renderTablaResumenAnual(producto) {
+  const tbody = document.getElementById("tablaResumenAnualBody");
+  tbody.innerHTML = "";
+
+  const rows = producto?.indicadores?.totalAnual || [];
+
+  if (!rows.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="4">Selecciona un código para ver el resumen anual</td>
+      </tr>
+    `;
+    return;
+  }
+
+  rows.forEach(item => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${item.anio}</td>
+      <td>${formatearNumero(item.vecesVendidas)}</td>
+      <td>${formatearNumero(item.cantidadTotal)}</td>
+      <td>${formatearNumero(item.montoTotal)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function generarInsights(data, producto) {
   const insight1 = document.getElementById("insight1");
   const insight2 = document.getElementById("insight2");
+
+  if (producto?.indicadores) {
+    const ind = producto.indicadores;
+    const ultimoAnio = ind.totalAnual?.length ? ind.totalAnual[ind.totalAnual.length - 1] : null;
+
+    insight1.textContent =
+      `El producto ${ind.codigoConsultado} se vendió ${formatearNumero(ind.totalVeces)} veces y movió ${formatearNumero(ind.totalCantidad)} unidades.`;
+
+    insight2.textContent =
+      ultimoAnio
+        ? `En ${ultimoAnio.anio} registró ${formatearNumero(ultimoAnio.vecesVendidas)} ventas, ${formatearNumero(ultimoAnio.cantidadTotal)} unidades y monto ${formatearNumero(ultimoAnio.montoTotal)}.`
+        : `No hay suficiente historial anual para este producto.`;
+
+    return;
+  }
 
   const topMarcas = data?.charts?.topMarcas || [];
   const porMes = data?.charts?.porMes || [];
@@ -527,14 +565,17 @@ async function cargarDashboard() {
       throw new Error("La respuesta no tiene la estructura esperada.");
     }
 
-    actualizarKPIs(data.kpis);
+    const producto = data.producto || null;
+
+    actualizarKPIs(data.kpis, producto);
     renderChartMontoPorMes(data.charts.porMes || []);
     renderChartTopMarcas(data.charts.topMarcas || []);
-    renderChartVentasPorMes(data.charts.ventasPorMes || []);
-    renderChartVentasPorAnio(data.charts.ventasPorAnio || []);
+    renderChartVentasPorMes(data.charts.ventasPorMes || [], producto);
+    renderChartVentasPorAnio(data.charts.ventasPorAnio || [], producto);
     renderChartTopCodigos(data.charts.topCodigos || []);
-    renderTablaCodigos(data.charts.topCodigos || []);
-    generarInsights(data);
+    renderTablaDetalle(producto);
+    renderTablaResumenAnual(producto);
+    generarInsights(data, producto);
   } catch (error) {
     mostrarError("Error al cargar datos del dashboard");
     console.error("Error al cargar dashboard:", error);

@@ -37,7 +37,7 @@
         <div>
           <span class="eyebrow">Analítica comercial</span>
           <h1>Dashboard Gerencial</h1>
-          <p>Compras, códigos, marcas y frecuencia de ventas de repuestos</p>
+          <p>Compras, códigos, marcas y frecuencia real de ventas de repuestos</p>
         </div>
       </header>
 
@@ -48,7 +48,7 @@
         <div class="section-head">
           <div>
             <h2>Filtros principales</h2>
-            <p>Filtra por año, mes, marca, categoría, código exacto o búsqueda libre</p>
+            <p>Filtra por producto y analiza ventas reales por fecha, mes y año</p>
           </div>
 
           <button id="btnLimpiarFiltros" class="btn-secondary" type="button">
@@ -126,7 +126,7 @@
             <div class="kpi-icon">V</div>
           </div>
           <strong id="kpiVeces">0</strong>
-          <small>Frecuencia total de ventas</small>
+          <small>Frecuencia real de ventas</small>
         </article>
 
         <article class="kpi-card kpi-amber">
@@ -212,8 +212,8 @@
       <section class="glass-card">
         <div class="section-head">
           <div>
-            <h2>Resumen ejecutivo de códigos</h2>
-            <p>Ranking ordenado por monto</p>
+            <h2>Historial de ventas del producto</h2>
+            <p>Detalle real por fecha, cantidad, precio y monto</p>
           </div>
         </div>
 
@@ -221,14 +221,46 @@
           <table class="summary-table">
             <thead>
               <tr>
-                <th>Ranking</th>
-                <th>Código + marca</th>
+                <th>Fecha</th>
+                <th>Año</th>
+                <th>Mes</th>
+                <th>Marca</th>
+                <th>Código</th>
+                <th>Cantidad</th>
+                <th>Precio</th>
                 <th>Monto</th>
               </tr>
             </thead>
-            <tbody id="tablaCodigosBody">
+            <tbody id="tablaDetalleBody">
               <tr>
-                <td colspan="3">Cargando datos...</td>
+                <td colspan="8">Selecciona un código para ver el historial</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="glass-card">
+        <div class="section-head">
+          <div>
+            <h2>Resumen anual del producto</h2>
+            <p>Veces vendidas, cantidad total y monto total por año</p>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="summary-table">
+            <thead>
+              <tr>
+                <th>Año</th>
+                <th>Veces vendidas</th>
+                <th>Cantidad total</th>
+                <th>Monto total</th>
+              </tr>
+            </thead>
+            <tbody id="tablaResumenAnualBody">
+              <tr>
+                <td colspan="4">Selecciona un código para ver el resumen anual</td>
               </tr>
             </tbody>
           </table>
